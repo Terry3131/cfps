@@ -1,0 +1,14 @@
+ALTER TABLE memos
+ADD COLUMN IF NOT EXISTS geopolitical_zone VARCHAR(100);
+
+ALTER TABLE memo_releases
+ADD COLUMN IF NOT EXISTS next_payment_date DATE;
+
+ALTER TABLE memo_releases
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();
+
+ALTER TABLE memos
+ADD COLUMN IF NOT EXISTS movement_type VARCHAR(20);
+
+ALTER TABLE memos
+DROP CONSTRAINT IF EXISTS memos_reference_no_key;

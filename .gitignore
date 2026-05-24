@@ -1,0 +1,62 @@
+# Environment secrets
+.env
+.env.*
+!.env.example
+!.env.render.example
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Logs
+*.log
+server/*.log
+
+# Runtime uploads
+server/uploads/*
+!server/uploads/.gitkeep
+!server/uploads/**/.gitkeep
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Temporary Office/Windows files
+~$*
+*.tmp
+
+# Uploaded/runtime files
+server/uploads/*
+!server/uploads/.gitkeep
+!server/uploads/**/.gitkeep
+
+# Logs
+*.log
+
+# Secrets
+.env
+.env.*
+!.env.example
+!.env.render.example
+
+# Dependencies and builds
+node_modules/
+dist/
+build/
+
+# Electron build outputs and installers
+client/dist-electron/
+client/dist-electron-qa/
+client/release/
+*.exe
+*.msi
+*.blockmap
+*.asar
+
+# Temporary Office/Windows files
+~$*
+*.tmp

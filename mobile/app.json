@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "CFPS Mobile",
+    "slug": "cfps-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0f172a"
+      },
+      "usesCleartextTraffic": true
+    },
+    "extra": {
+      "defaultApiBaseUrl": "http://192.168.43.13:5000",
+      "notificationPollMs": 45000
+    }
+  }
+}
