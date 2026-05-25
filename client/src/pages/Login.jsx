@@ -63,7 +63,16 @@ export default function Login() {
 
       navigate(redirectPath, { replace: true });
     } catch (err) {
-      setError(err?.response?.data?.message || "Login failed.");
+      if (import.meta.env.DEV) {
+        console.error("Login request failed", err);
+      }
+
+      setError(
+        err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Login failed."
+      );
     } finally {
       setLoading(false);
     }

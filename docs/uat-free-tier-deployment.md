@@ -59,12 +59,14 @@ HOST=0.0.0.0
 PORT=10000
 DATABASE_URL=<supabase-url>
 JWT_SECRET=<32+ char secret>
-CORS_ORIGIN=<vercel-url>
+CORS_ORIGIN=https://cfps-theta.vercel.app
 ENFORCE_HTTPS=true
 TRUST_PROXY=true
 UPLOAD_DIR=/tmp/cfps-uploads
 DB_POOL_MAX=5
 ```
+
+Use the deployed Vercel origin exactly, with no trailing slash.
 
 ## Vercel Frontend
 
@@ -73,10 +75,10 @@ Deploy from `client/`.
 Set:
 
 ```text
-VITE_API_BASE_URL=<render-backend-url>
+VITE_API_BASE_URL=https://THE-RENDER-BACKEND-URL.onrender.com
 ```
 
-The frontend calls backend routes directly, for example `/auth/login` and `/memos`; do not append `/api`.
+Use the deployed Render backend origin exactly, with no trailing slash. The frontend calls backend routes directly, for example `/auth/login` and `/memos`; do not append `/api`, and do not use the Vercel frontend URL as the API base URL.
 
 ## Smoke Tests
 

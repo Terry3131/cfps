@@ -55,11 +55,33 @@ function getSafeBackTarget({ role, fromPath, stateFrom, fallback }) {
 
 function normalizeStatePath(value) {
   if (!value) return "";
-  if (typeof value === "string") return value;
+  if (typeof value === "string") return normalizeRoutePath(value);
 
   const pathname = value.pathname || "";
   const search = value.search || "";
   const hash = value.hash || "";
 
-  return pathname ? `${pathname}${search}${hash}` : "";
+  return normalizeRoutePath(pathname ? `${pathname}${search}${hash}` : "");
+}
+
+function normalizeRoutePath(value) {
+  const path = String(value || "").trim();
+
+  if (!path) return "";
+
+  if (/^https?:\/\//i.test(path)) {
+    try {
+      const url = new URL(path);
+
+      if (url.origin !== window.location.origin) {
+        return "";
+      }
+
+      return `${url.pathname}${url.search}${url.hash}`;
+    } catch {
+      return "";
+    }
+  }
+
+  return path.startsWith("/") ? path : "";
 }
