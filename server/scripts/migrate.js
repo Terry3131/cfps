@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+require("./db-script-timeouts");
 const pool = require("../src/config/db");
 
 const sqlDir = path.join(__dirname, "../src/db/sql");

@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+require("./db-script-timeouts");
 const pool = require("../src/config/db");
 
 const username = process.env.SUPERADMIN_USERNAME || "superadmin";

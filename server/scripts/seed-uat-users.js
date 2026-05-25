@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+require("./db-script-timeouts");
 const pool = require("../src/config/db");
 
 const DEFAULT_PASSWORD = process.env.UAT_DEFAULT_PASSWORD;
