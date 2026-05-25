@@ -6,7 +6,7 @@ const sqlDir = path.join(__dirname, "../src/db/sql");
 
 async function migrate() {
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS _cfps_migrations (
+    CREATE TABLE IF NOT EXISTS public._cfps_migrations (
       filename TEXT PRIMARY KEY,
       applied_at TIMESTAMP NOT NULL DEFAULT NOW()
     )
@@ -23,7 +23,7 @@ async function migrate() {
 
   for (const file of files) {
     const applied = await pool.query(
-      "SELECT 1 FROM _cfps_migrations WHERE filename = $1",
+      "SELECT 1 FROM public._cfps_migrations WHERE filename = $1",
       [file]
     );
 
@@ -39,9 +39,10 @@ async function migrate() {
     await pool.query("BEGIN");
 
     try {
+      await pool.query("SET search_path TO public");
       await pool.query(sql);
       await pool.query(
-        "INSERT INTO _cfps_migrations (filename) VALUES ($1)",
+        "INSERT INTO public._cfps_migrations (filename) VALUES ($1)",
         [file]
       );
       await pool.query("COMMIT");
