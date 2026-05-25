@@ -15,6 +15,7 @@ const userRoutes = require("./routes/userRoutes");
 const errorMiddleware = require("./middleware/errorMiddleware");
 const { runNotificationChecks } = require("./services/notificationService");
 const { CORS_ORIGIN, ENFORCE_HTTPS, HOST, NODE_ENV, PORT, TRUST_PROXY } = require("./config/env");
+const pool = require("./config/db");
 const upload = require("./config/multer");
 
 const app = express();
@@ -42,6 +43,24 @@ app.get("/health", (req, res) => {
     success: true,
     message: "Server is running"
   });
+});
+
+app.get("/health/db", async (req, res) => {
+  try {
+    await pool.query("SELECT 1");
+
+    return res.status(200).json({
+      status: "ok",
+      database: "connected",
+    });
+  } catch (error) {
+    console.error("Database health check failed:", error.message);
+
+    return res.status(503).json({
+      status: "error",
+      database: "failed",
+    });
+  }
 });
 
 app.use("/auth", authRoutes);
@@ -98,7 +117,7 @@ function getLanUrls(port) {
 function buildCorsOptions() {
   const allowedOrigins = CORS_ORIGIN
     .split(",")
-    .map((origin) => origin.trim())
+    .map(normalizeOrigin)
     .filter(Boolean);
 
   if (allowedOrigins.length === 0 && NODE_ENV !== "production") {
@@ -107,13 +126,18 @@ function buildCorsOptions() {
 
   return {
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
         return callback(null, true);
       }
 
       return callback(Object.assign(new Error("CORS origin not allowed."), { statusCode: 403 }));
     },
+    optionsSuccessStatus: 204,
   };
+}
+
+function normalizeOrigin(origin) {
+  return String(origin || "").trim().replace(/\/+$/, "");
 }
 
 function enforceHttps(req, res, next) {

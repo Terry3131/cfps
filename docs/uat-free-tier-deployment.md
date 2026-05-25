@@ -75,7 +75,7 @@ Deploy from `client/`.
 Set:
 
 ```text
-VITE_API_BASE_URL=https://THE-RENDER-BACKEND-URL.onrender.com
+VITE_API_BASE_URL=https://cfps-backend.onrender.com
 ```
 
 Use the deployed Render backend origin exactly, with no trailing slash. The frontend calls backend routes directly, for example `/auth/login` and `/memos`; do not append `/api`, and do not use the Vercel frontend URL as the API base URL.
@@ -86,6 +86,7 @@ Backend:
 
 ```bash
 curl <render-backend-url>/health
+curl <render-backend-url>/health/db
 curl -X POST <render-backend-url>/auth/login \
   -H "Content-Type: application/json" \
   -d '{"username":"uat_cas","password":"<uat-password>"}'

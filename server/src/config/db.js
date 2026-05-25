@@ -17,6 +17,15 @@ const pool = new Pool({
   max: parsePositiveInteger(DB_POOL_MAX, 20),
   idleTimeoutMillis: parsePositiveInteger(DB_IDLE_TIMEOUT, 30000),
   connectionTimeoutMillis: parsePositiveInteger(DB_CONNECTION_TIMEOUT, 2000),
+  ssl: shouldUseSsl(DATABASE_URL) ? { rejectUnauthorized: false } : undefined,
 });
 
 module.exports = pool;
+
+function shouldUseSsl(connectionString = "") {
+  return (
+    /sslmode=require/i.test(connectionString) ||
+    /\.supabase\./i.test(connectionString) ||
+    /\.pooler\.supabase\.com/i.test(connectionString)
+  );
+}

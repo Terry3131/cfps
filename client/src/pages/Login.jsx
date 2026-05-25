@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import API from "../api/api";
+import API, { API_BASE_URL, getApiRequestUrl } from "../api/api";
 import { saveAuth } from "../auth/authStore";
 import { canAccessPath, getDefaultRoute } from "../auth/roleAccess";
+
+const LOGIN_ENDPOINT = "/auth/login";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -43,7 +45,14 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await API.post("/auth/login", form);
+      if (import.meta.env.DEV) {
+        console.info("Login request URL", {
+          apiBaseUrl: API_BASE_URL || "(not configured)",
+          requestUrl: getApiRequestUrl(LOGIN_ENDPOINT),
+        });
+      }
+
+      const res = await API.post(LOGIN_ENDPOINT, form);
 
       const data = res?.data?.data || res?.data;
       const token = data?.token;
@@ -67,12 +76,7 @@ export default function Login() {
         console.error("Login request failed", err);
       }
 
-      setError(
-        err?.response?.data?.message ||
-          err?.response?.data?.error ||
-          err?.message ||
-          "Login failed."
-      );
+      setError(getLoginErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -201,4 +205,24 @@ export default function Login() {
       </div>
     </div>
   );
+}
+
+function getLoginErrorMessage(error) {
+  if (!error?.response) {
+    return "Cannot reach backend server. Please check backend URL or CORS.";
+  }
+
+  const status = error.response.status;
+  const backendMessage =
+    error.response?.data?.message || error.response?.data?.error || "";
+
+  if (status === 401) {
+    return "Invalid username or password.";
+  }
+
+  if (status >= 500) {
+    return "Server error. Please check Render logs.";
+  }
+
+  return backendMessage || error.message || "Login failed.";
 }

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { clearAuth, getToken } from "../auth/authStore";
 
-const API_BASE_URL = resolveApiBaseUrl();
+export const API_BASE_URL = resolveApiBaseUrl();
 
 const API = axios.create({
   baseURL: API_BASE_URL,
@@ -9,6 +9,10 @@ const API = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+if (import.meta.env.DEV) {
+  console.info("API base URL", API_BASE_URL || "(not configured)");
+}
 
 API.interceptors.request.use((config) => {
   if (!API_BASE_URL) {
@@ -46,6 +50,16 @@ API.interceptors.response.use(
 );
 
 export default API;
+
+export function getApiRequestUrl(path) {
+  if (!API_BASE_URL) return path;
+
+  try {
+    return new URL(path, `${API_BASE_URL}/`).toString();
+  } catch {
+    return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  }
+}
 
 function resolveApiBaseUrl() {
   const configuredUrl = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL);
