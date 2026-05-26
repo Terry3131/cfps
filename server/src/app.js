@@ -13,8 +13,20 @@ const referenceRoutes = require("./routes/referenceRoutes");
 const systemRoutes = require("./routes/systemRoutes");
 const userRoutes = require("./routes/userRoutes");
 const errorMiddleware = require("./middleware/errorMiddleware");
-const { runNotificationChecks } = require("./services/notificationService");
-const { CORS_ORIGIN, ENFORCE_HTTPS, HOST, NODE_ENV, PORT, TRUST_PROXY } = require("./config/env");
+
+const {
+  runNotificationChecks,
+} = require("./services/notificationService");
+
+const {
+  CORS_ORIGIN,
+  ENFORCE_HTTPS,
+  HOST,
+  NODE_ENV,
+  PORT,
+  TRUST_PROXY,
+} = require("./config/env");
+
 const pool = require("./config/db");
 const upload = require("./config/multer");
 
@@ -41,7 +53,7 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Server is running"
+    message: "Server is running",
   });
 });
 
@@ -85,9 +97,14 @@ app.listen(PORT, HOST, () => {
 
     if (lanUrls.length > 0) {
       console.log("LAN access enabled:");
-      lanUrls.forEach((url) => console.log(`  ${url}`));
+
+      lanUrls.forEach((url) => {
+        console.log(`  ${url}`);
+      });
     } else {
-      console.log("LAN access enabled, but no non-internal IPv4 address was detected.");
+      console.log(
+        "LAN access enabled, but no non-internal IPv4 address was detected."
+      );
     }
   } else {
     console.log(`Local access: http://${HOST}:${PORT}`);
@@ -95,58 +112,95 @@ app.listen(PORT, HOST, () => {
   }
 });
 
-const notificationCheckIntervalMinutes = Number(process.env.NOTIFICATION_CHECK_INTERVAL_MINUTES || 60);
+const notificationCheckIntervalMinutes = Number(
+  process.env.NOTIFICATION_CHECK_INTERVAL_MINUTES || 60
+);
 
 runNotificationChecks().catch((error) => {
-  console.error("Initial notification checks failed:", error.message);
+  console.error(
+    "Initial notification checks failed:",
+    error.message
+  );
 });
 
 setInterval(() => {
   runNotificationChecks().catch((error) => {
-    console.error("Scheduled notification checks failed:", error.message);
+    console.error(
+      "Scheduled notification checks failed:",
+      error.message
+    );
   });
 }, notificationCheckIntervalMinutes * 60 * 1000);
 
 function getLanUrls(port) {
   return Object.values(os.networkInterfaces())
     .flat()
-    .filter((entry) => entry && entry.family === "IPv4" && !entry.internal)
+    .filter(
+      (entry) =>
+        entry &&
+        entry.family === "IPv4" &&
+        !entry.internal
+    )
     .map((entry) => `http://${entry.address}:${port}`);
 }
 
 function buildCorsOptions() {
-  const allowedOrigins = CORS_ORIGIN
+  const allowedOrigins = String(CORS_ORIGIN || "")
     .split(",")
     .map(normalizeOrigin)
     .filter(Boolean);
 
-  if (allowedOrigins.length === 0 && NODE_ENV !== "production") {
+  if (
+    allowedOrigins.length === 0 &&
+    NODE_ENV !== "production"
+  ) {
     return {};
   }
 
   return {
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
+      if (
+        !origin ||
+        allowedOrigins.includes(normalizeOrigin(origin))
+      ) {
         return callback(null, true);
       }
 
-      return callback(Object.assign(new Error("CORS origin not allowed."), { statusCode: 403 }));
+      return callback(
+        Object.assign(
+          new Error("CORS origin not allowed."),
+          { statusCode: 403 }
+        )
+      );
     },
+    credentials: true,
     optionsSuccessStatus: 204,
   };
 }
 
 function normalizeOrigin(origin) {
-  return String(origin || "").trim().replace(/\/+$/, "");
+  return String(origin || "")
+    .trim()
+    .replace(/\/+$/, "");
 }
 
 function enforceHttps(req, res, next) {
-  if (!ENFORCE_HTTPS || req.secure || req.headers["x-forwarded-proto"] === "https") {
+  if (
+    !ENFORCE_HTTPS ||
+    req.secure ||
+    req.headers["x-forwarded-proto"] === "https"
+  ) {
     return next();
   }
 
-  if (req.method === "GET" || req.method === "HEAD") {
-    return res.redirect(301, `https://${req.headers.host}${req.originalUrl}`);
+  if (
+    req.method === "GET" ||
+    req.method === "HEAD"
+  ) {
+    return res.redirect(
+      301,
+      `https://${req.headers.host}${req.originalUrl}`
+    );
   }
 
   return res.status(426).json({
@@ -160,8 +214,14 @@ function securityHeaders(req, res, next) {
   res.set("X-Frame-Options", "DENY");
   res.set("Referrer-Policy", "no-referrer");
 
-  if (req.secure || req.headers["x-forwarded-proto"] === "https") {
-    res.set("Strict-Transport-Security", "max-age=31536000");
+  if (
+    req.secure ||
+    req.headers["x-forwarded-proto"] === "https"
+  ) {
+    res.set(
+      "Strict-Transport-Security",
+      "max-age=31536000"
+    );
   }
 
   next();
