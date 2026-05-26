@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { login, logout, getMe } = require("../controllers/authController");
-const authMiddleware = require("../middleware/authMiddleware");
+const { authenticate: authMiddleware } = require("../middleware/authMiddleware");
 const { loginRateLimit } = require("../middleware/rateLimitMiddleware");
 
 router.post("/login", loginRateLimit, login);
