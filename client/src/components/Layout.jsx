@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import API from "../api/api";
 import { clearAuth, getUser } from "../auth/authStore";
 import { getMenuForRole } from "../auth/roleAccess";
 import { isDesktopShell } from "../desktop/desktopApi";
@@ -43,10 +44,16 @@ export default function Layout() {
     localStorage.setItem("ui_theme", nextTheme);
   };
 
-  const logout = () => {
-    clearAuth();
-    setSidebarOpen(false);
-    navigate("/login");
+  const logout = async () => {
+    try {
+      await API.post("/auth/logout");
+    } catch {
+      // Local logout still clears the browser session if the token is already invalid.
+    } finally {
+      clearAuth();
+      setSidebarOpen(false);
+      navigate("/login");
+    }
   };
 
   const sidebarClass = isAirforce

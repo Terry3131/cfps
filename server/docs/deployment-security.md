@@ -133,6 +133,24 @@ Application layer limits currently enforced:
 
 Keep matching Nginx limits in front of the application for internet deployments.
 
+## CORS and HTTPS
+
+Production must set:
+
+```text
+NODE_ENV=production
+ENFORCE_HTTPS=true
+TRUST_PROXY=true
+CORS_ORIGIN=https://cfps-theta.vercel.app
+ALLOW_DEV_CORS_ORIGINS=false
+```
+
+`CORS_ORIGIN` must not contain `*`. HTTP origins are rejected in production unless `ALLOW_DEV_CORS_ORIGINS=true` is deliberately set for localhost-only testing.
+
+## JWT Session Invalidation
+
+JWTs include a per-user `token_version`. `POST /auth/logout`, password changes, role changes, branch changes, and account deactivation increment that value so older tokens are rejected by `authMiddleware`.
+
 ## SSL Renewal
 
 ```bash
@@ -161,3 +179,5 @@ Rules:
 - Do not email database dumps.
 - Do not expose backup folders through Nginx.
 - Do not store backups in public cloud links without access protection.
+- Run `server/scripts/backup-db.sh` with `DATABASE_URL` and a restricted `BACKUP_DIR`.
+- Run `server/scripts/restore-db.sh /path/to/db.backup` only after setting `CFPS_RESTORE_CONFIRM=YES`; the script refuses destructive restores without that confirmation.

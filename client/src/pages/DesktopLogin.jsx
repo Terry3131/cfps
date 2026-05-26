@@ -85,7 +85,7 @@ export default function DesktopLogin() {
             name="apiBaseUrl"
             value={form.apiBaseUrl}
             onChange={handleChange}
-            placeholder="http://localhost:5000"
+            placeholder="https://cfps-backend.onrender.com"
             required
           />
 

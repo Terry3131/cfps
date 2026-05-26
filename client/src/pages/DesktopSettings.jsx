@@ -121,7 +121,7 @@ export default function DesktopSettings() {
             name="apiBaseUrl"
             value={settings.apiBaseUrl}
             onChange={handleChange}
-            placeholder="http://localhost:5000"
+            placeholder="https://cfps-backend.onrender.com"
             required
           />
           <p className="text-xs text-slate-500">

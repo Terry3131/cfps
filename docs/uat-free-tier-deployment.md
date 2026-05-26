@@ -60,6 +60,7 @@ PORT=10000
 DATABASE_URL=<supabase-url>
 JWT_SECRET=<32+ char secret>
 CORS_ORIGIN=https://cfps-theta.vercel.app
+ALLOW_DEV_CORS_ORIGINS=false
 ENFORCE_HTTPS=true
 TRUST_PROXY=true
 UPLOAD_DIR=/tmp/cfps-uploads
@@ -104,6 +105,7 @@ Frontend:
 - Log in as CAS, PASO-CAS, AA-CAS, Monitor, Validator, and CAB UAT users.
 - Verify dashboard and notifications.
 - Verify mobile login.
+- Verify mobile production builds use `https://cfps-backend.onrender.com` and do not allow cleartext traffic.
 - Verify desktop API setting points to the Render backend URL.
 
 ## Free-Tier Limits

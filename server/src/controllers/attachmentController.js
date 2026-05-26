@@ -2,6 +2,7 @@ const attachmentService = require("../services/attachmentService");
 const { getMemoById } = require("../services/memoService");
 const { successResponse, errorResponse } = require("../utils/responses");
 const { validateAttachment } = require("../utils/validators");
+const fs = require("fs");
 
 async function uploadAttachment(req, res, next) {
   try {
@@ -12,6 +13,8 @@ async function uploadAttachment(req, res, next) {
     const validationError = validateAttachment(memo, req.file);
 
     if (validationError) {
+      removeUploadedFile(req.file?.path);
+
       return errorResponse(
         res,
         validationError,
@@ -61,3 +64,13 @@ module.exports = {
   getAttachments,
   deleteAttachment,
 };
+
+function removeUploadedFile(filePath) {
+  try {
+    if (filePath && fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  } catch {
+    // Attachment validation failure must not be masked by cleanup errors.
+  }
+}

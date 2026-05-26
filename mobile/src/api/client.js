@@ -2,9 +2,10 @@ import axios from "axios";
 
 import { clearToken, getToken } from "../services/tokenService";
 
+export const DEFAULT_PRODUCTION_API_BASE_URL = "https://cfps-backend.onrender.com";
 export const DEFAULT_LAN_API_BASE_URL = "http://192.168.43.13:5000";
 
-let currentApiBaseUrl = DEFAULT_LAN_API_BASE_URL;
+let currentApiBaseUrl = DEFAULT_PRODUCTION_API_BASE_URL;
 let unauthorizedHandler = null;
 
 const api = axios.create({
@@ -57,7 +58,7 @@ api.interceptors.response.use(
 );
 
 export function configureApiClient({ baseUrl, onUnauthorized } = {}) {
-  if (baseUrl) currentApiBaseUrl = baseUrl;
+  if (baseUrl) currentApiBaseUrl = validateApiBaseUrl(baseUrl);
   if (onUnauthorized) unauthorizedHandler = onUnauthorized;
 }
 
@@ -123,6 +124,40 @@ function getAlternateApiBaseUrl(baseUrl) {
   }
 
   return `${trimmed}/api`;
+}
+
+export function validateApiBaseUrl(value) {
+  const normalized = String(value || "").trim().replace(/\/+$/, "");
+
+  if (!normalized) {
+    return DEFAULT_PRODUCTION_API_BASE_URL;
+  }
+
+  let parsedUrl;
+
+  try {
+    parsedUrl = new URL(normalized);
+  } catch {
+    return DEFAULT_PRODUCTION_API_BASE_URL;
+  }
+
+  if (parsedUrl.protocol === "https:") {
+    return normalized;
+  }
+
+  const isDev = typeof __DEV__ !== "undefined" && __DEV__;
+  const isLocalDevHost =
+    parsedUrl.hostname === "localhost" ||
+    parsedUrl.hostname === "127.0.0.1" ||
+    /^192\.168\.\d{1,3}\.\d{1,3}$/.test(parsedUrl.hostname) ||
+    /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(parsedUrl.hostname) ||
+    /^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(parsedUrl.hostname);
+
+  if (isDev && parsedUrl.protocol === "http:" && isLocalDevHost) {
+    return normalized;
+  }
+
+  return DEFAULT_PRODUCTION_API_BASE_URL;
 }
 
 export default api;

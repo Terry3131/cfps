@@ -45,6 +45,10 @@ function validateApiBaseUrl(value) {
     throw new Error("Unsupported API protocol.");
   }
 
+  if (url.protocol === "http:" && !isExplicitDevHttpAllowed()) {
+    throw new Error("HTTP API URLs require CFPS_ALLOW_DEV_HTTP_API=true and are for localhost/LAN development only.");
+  }
+
   if (url.protocol === "http:" && !(isLocalhost || isPrivateLanIp)) {
     throw new Error("HTTP API URLs are allowed only for localhost or approved LAN/dev IPs.");
   }
@@ -54,6 +58,10 @@ function validateApiBaseUrl(value) {
   }
 
   return url.toString().replace(/\/$/, "");
+}
+
+function isExplicitDevHttpAllowed() {
+  return process.env.CFPS_ALLOW_DEV_HTTP_API === "true" || process.env.NODE_ENV === "development";
 }
 
 async function getSettings(db) {

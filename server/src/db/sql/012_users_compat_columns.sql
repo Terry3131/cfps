@@ -20,6 +20,9 @@ ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;
 ALTER TABLE public.users
 ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW();
 
+ALTER TABLE public.users
+ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;
+
 UPDATE public.users
 SET full_name = username
 WHERE full_name IS NULL OR BTRIM(full_name) = '';

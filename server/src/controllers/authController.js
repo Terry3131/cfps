@@ -1,6 +1,7 @@
 const { findUserByUsername, comparePassword } = require("../services/authService");
 const { generateToken } = require("../utils/jwt");
 const { successResponse, errorResponse } = require("../utils/responses");
+const pool = require("../config/db");
 
 const login = async (req, res, next) => {
   const username = req.body?.username;
@@ -58,7 +59,8 @@ const login = async (req, res, next) => {
       id: user.id,
       username: user.username,
       role: user.role,
-      branch_dru: user.branch_dru
+      branch_dru: user.branch_dru,
+      token_version: user.token_version || 0,
     });
 
     logLoginEvent("success", { username: loginUsername });
@@ -73,6 +75,22 @@ const login = async (req, res, next) => {
         branch_dru: user.branch_dru
       }
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const logout = async (req, res, next) => {
+  try {
+    await pool.query(
+      `UPDATE users
+       SET token_version = token_version + 1,
+           updated_at = NOW()
+       WHERE id = $1`,
+      [req.user.id]
+    );
+
+    return successResponse(res, "Logout successful");
   } catch (error) {
     next(error);
   }
@@ -93,6 +111,7 @@ const getMe = async (req, res, next) => {
 
 module.exports = {
   login,
+  logout,
   getMe
 };
 

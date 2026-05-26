@@ -166,7 +166,19 @@ function registerIpc() {
   });
 
   ipcMain.handle("auth:logout", async () => {
-    await store.clearAuthSession(await getDesktopDb());
+    const db = await getDesktopDb();
+    const session = await store.getAuthSession(db);
+
+    if (session?.token && session?.apiBaseUrl) {
+      await fetch(`${session.apiBaseUrl.replace(/\/$/, "")}/auth/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.token}`,
+        },
+      }).catch(() => {});
+    }
+
+    await store.clearAuthSession(db);
     return true;
   });
 

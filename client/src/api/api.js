@@ -18,7 +18,7 @@ API.interceptors.request.use((config) => {
   if (!API_BASE_URL) {
     return Promise.reject(
       new Error(
-        "VITE_API_BASE_URL is missing or points to the frontend. Set it to the Render backend URL."
+        "VITE_API_BASE_URL is missing, insecure, or points to the frontend. Set it to the HTTPS Render backend URL."
       )
     );
   }
@@ -65,7 +65,7 @@ function resolveApiBaseUrl() {
   const configuredUrl = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL);
 
   if (configuredUrl) {
-    if (isFrontendUrl(configuredUrl)) {
+    if (isFrontendUrl(configuredUrl) || isInsecureProductionApiUrl(configuredUrl)) {
       return "";
     }
 
@@ -92,5 +92,15 @@ function isFrontendUrl(url) {
     return isCurrentAppOrigin || parsedUrl.hostname.endsWith(".vercel.app");
   } catch {
     return false;
+  }
+}
+
+function isInsecureProductionApiUrl(url) {
+  if (import.meta.env.DEV) return false;
+
+  try {
+    return new URL(url).protocol !== "https:";
+  } catch {
+    return true;
   }
 }

@@ -255,6 +255,7 @@ CREATE TABLE public.users (
     role character varying(50) NOT NULL,
     branch_dru character varying(150),
     is_active boolean DEFAULT true,
+    token_version integer DEFAULT 0 NOT NULL,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now()
 );

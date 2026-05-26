@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { configureApiClient, getApiErrorMessage } from "../api/client";
-import { loginRequest, meRequest } from "../services/authService";
+import { loginRequest, logoutRequest, meRequest } from "../services/authService";
 import { clearToken, getToken, setToken } from "../services/tokenService";
 import { isAllowedRole, normalizeRole } from "../utils/roles";
 
@@ -112,7 +112,13 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await clearSession();
+    try {
+      await logoutRequest();
+    } catch {
+      // Clear the local secure session even if the backend token is already invalid.
+    } finally {
+      await clearSession();
+    }
   }, [clearSession]);
 
   const value = useMemo(

@@ -14,8 +14,8 @@ This document is the backend source of truth for workflow authorization. Fronten
 | Attachments list | `GET /memos/:id/attachments` | Any authenticated user |
 | Attachments upload | `POST /memos/:id/attachments` | `SUPER_ADMIN`, `REGISTRY`, `MONITOR`, `VALIDATOR`, `CASH_OFFICE` |
 | Attachments delete | `DELETE /memos/:id/attachments/:attachmentId` | `SUPER_ADMIN`, `REGISTRY`, `MONITOR`, `VALIDATOR`, `CASH_OFFICE` |
-| Reports | `GET /reports/memos` | `SUPER_ADMIN`, `CAS` |
-| Dashboard | `GET /dashboard/*` | `SUPER_ADMIN`, `CAS`, `CAB`, `CASH_OFFICE`, `MONITOR` |
+| Reports | `GET /reports/memos` | `SUPER_ADMIN`, `CAS`, `AA_CAS`, `PASO_CAS` |
+| Dashboard | `GET /dashboard/*` | `SUPER_ADMIN`, `CAS`, `AA_CAS`, `PASO_CAS`, `CAB`, `CASH_OFFICE`, `MONITOR` |
 | Notifications list | `GET /notifications` | Authenticated user sees notifications scoped to their `target_user_id`, their `target_role`, or global notifications where both `target_user_id IS NULL` and `target_role IS NULL`. |
 | Notifications mark read | `PATCH /notifications/:id/read` | Authenticated user may mark only notifications scoped to their `target_user_id`, their `target_role`, or global notifications where both `target_user_id IS NULL` and `target_role IS NULL`. |
 | Notifications mark all read | `PATCH /notifications/read-all` | Authenticated user may mark only notifications scoped to their `target_user_id`, their `target_role`, or global notifications where both `target_user_id IS NULL` and `target_role IS NULL`. |

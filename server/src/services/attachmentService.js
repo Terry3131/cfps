@@ -81,34 +81,39 @@ async function createAttachment(memoId, userId, file, body) {
     );
   }
 
-  const result = await db.query(
-    `
-    INSERT INTO memo_attachments (
-      memo_id,
-      uploaded_by,
-      file_name,
-      file_type,
-      file_size,
-      file_url,
-      attachment_category,
-      description
-    )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-    RETURNING *
-    `,
-    [
-      memoId,
-      userId,
-      file.originalname,
-      file.mimetype,
-      file.size,
-      `/uploads/memo-attachments/${file.filename}`,
-      body.attachment_category || null,
-      body.description || null,
-    ]
-  );
+  try {
+    const result = await db.query(
+      `
+      INSERT INTO memo_attachments (
+        memo_id,
+        uploaded_by,
+        file_name,
+        file_type,
+        file_size,
+        file_url,
+        attachment_category,
+        description
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      RETURNING *
+      `,
+      [
+        memoId,
+        userId,
+        file.originalname,
+        file.mimetype,
+        file.size,
+        `/uploads/memo-attachments/${file.filename}`,
+        body.attachment_category || null,
+        body.description || null,
+      ]
+    );
 
-  return result.rows[0];
+    return result.rows[0];
+  } catch (error) {
+    removeUploadedFile(file.path);
+    throw error;
+  }
 }
 
 async function getAttachments(memoId) {

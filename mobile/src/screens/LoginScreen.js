@@ -38,7 +38,7 @@ export default function LoginScreen() {
     >
       <View style={[styles.panel, { backgroundColor: isDark ? "#0f172a" : "#ffffff", borderColor: isDark ? "#1e293b" : "#dbe3ef" }]}>
         <View style={styles.stack}>
-          <Field label="API Base URL" onChangeText={setBaseUrl} placeholder="http://192.168.43.13:5000" value={baseUrl} />
+          <Field label="API Base URL" onChangeText={setBaseUrl} placeholder="https://cfps-backend.onrender.com" value={baseUrl} />
           <Field label="Username" onChangeText={setUsername} placeholder="Username" value={username} />
           <Field label="Password" onChangeText={setPassword} placeholder="Password" secureTextEntry value={password} />
 
@@ -54,7 +54,7 @@ export default function LoginScreen() {
 
       <View style={styles.note}>
         <Text style={[styles.noteText, { color: theme.colors.text }]}>
-          Use http://192.168.43.13:5000 for this LAN test, or your production HTTPS API gateway with /api when required.
+          Production builds require the HTTPS API URL. LAN HTTP URLs are only accepted in development builds.
         </Text>
       </View>
     </Screen>

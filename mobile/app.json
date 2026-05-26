@@ -18,11 +18,11 @@
       "adaptiveIcon": {
         "backgroundColor": "#0f172a"
       },
-      "usesCleartextTraffic": true
+      "usesCleartextTraffic": false
     },
     "extra": {
-      "defaultApiBaseUrl": "http://192.168.43.13:5000",
-      "notificationPollMs": 45000
+      "defaultApiBaseUrl": "https://cfps-backend.onrender.com",
+      "notificationPollMs": 75000
     }
   }
 }

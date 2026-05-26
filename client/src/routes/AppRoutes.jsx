@@ -231,7 +231,7 @@ export default function AppRoutes() {
         <Route
           path="/desktop/local-memos"
           element={withRoles(
-            <LocalMemoDrafts />,
+            isDesktopShell() ? <LocalMemoDrafts /> : <Navigate to="/unauthorized" replace />,
             ["SUPER_ADMIN", "CAS", "REGISTRY"]
           )}
         />

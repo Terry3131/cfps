@@ -3,7 +3,7 @@ const pool = require("../config/db");
 
 const findUserByUsername = async (username) => {
   const query = `
-    SELECT id, full_name, username, password_hash, role, branch_dru, is_active
+    SELECT id, full_name, username, password_hash, role, branch_dru, is_active, token_version
     FROM users
     WHERE username = $1
     LIMIT 1

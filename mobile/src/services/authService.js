@@ -9,3 +9,8 @@ export async function meRequest() {
   const response = await api.get(apiPath("/auth/me"));
   return unwrapResponse(response);
 }
+
+export async function logoutRequest() {
+  const response = await api.post(apiPath("/auth/logout"));
+  return unwrapResponse(response);
+}

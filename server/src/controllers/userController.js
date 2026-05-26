@@ -215,6 +215,14 @@ async function updateUserHandler(req, res, next) {
            branch_dru = $3,
            is_active = $4,
            password_hash = COALESCE($5, password_hash),
+           token_version = CASE
+             WHEN role <> $2
+               OR COALESCE(branch_dru, '') <> COALESCE($3, '')
+               OR is_active <> $4
+               OR $5 IS NOT NULL
+             THEN token_version + 1
+             ELSE token_version
+           END,
            updated_at = NOW()
        WHERE id = $6
        RETURNING id, full_name, username, role, branch_dru, is_active, created_at, updated_at`,

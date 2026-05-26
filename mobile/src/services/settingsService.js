@@ -1,16 +1,14 @@
 import * as SecureStore from "expo-secure-store";
 
-import { DEFAULT_LAN_API_BASE_URL } from "../api/client";
+import { DEFAULT_PRODUCTION_API_BASE_URL, validateApiBaseUrl } from "../api/client";
 
-export const DEFAULT_API_BASE_URL = DEFAULT_LAN_API_BASE_URL;
+export const DEFAULT_API_BASE_URL = DEFAULT_PRODUCTION_API_BASE_URL;
 
 const API_BASE_URL_KEY = "cfps.apiBaseUrl";
 const THEME_MODE_KEY = "cfps.themeMode";
 
 export function normalizeApiBaseUrl(value) {
-  const normalized = String(value || "")
-    .trim()
-    .replace(/\/+$/, "");
+  const normalized = validateApiBaseUrl(value);
 
   if (!normalized || normalized.includes("YOUR-PC-IP")) {
     return DEFAULT_API_BASE_URL;

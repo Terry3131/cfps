@@ -3,7 +3,7 @@ const fs = require("fs");
 const sqlite = require("sqlite-electron");
 
 const DEFAULT_SETTINGS = {
-  apiBaseUrl: "https://yourdomain.com/api",
+  apiBaseUrl: "https://cfps-backend.onrender.com",
   deviceName: "CFPS Desktop",
   syncIntervalMinutes: 15,
   autoSyncEnabled: false,
