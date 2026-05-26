@@ -1,138 +1,87 @@
-const { findUserByUsername, comparePassword } = require("../services/authService");
-const { generateToken } = require("../utils/jwt");
-const { successResponse, errorResponse } = require("../utils/responses");
-const pool = require("../config/db");
+const jwt = require("jsonwebtoken");
+const {
+  findUserByUsername,
+  comparePassword,
+} = require("../services/authService");
+
+const {
+  JWT_SECRET,
+  JWT_EXPIRES_IN,
+} = require("../config/env");
 
 const login = async (req, res, next) => {
-  const username = req.body?.username;
-
   try {
-    const { password } = req.body;
-    const loginUsername = String(username || "").trim();
+    const { username, password } = req.body;
 
-    if (!loginUsername || !password) {
-      return errorResponse(res, "Username and password are required", 400);
-    }
+    console.log("Login attempt", { username });
 
-    logLoginEvent("attempt", { username: loginUsername });
-
-    let user;
-
-    try {
-      user = await findUserByUsername(loginUsername);
-    } catch (error) {
-      logLoginEvent("database lookup failed", {
-        username: loginUsername,
-        error: error.message,
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Username and password are required",
       });
-      throw error;
     }
+
+    const user = await findUserByUsername(username);
 
     if (!user) {
-      logLoginEvent("user not found", { username: loginUsername });
-      return errorResponse(res, "Invalid username or password", 401);
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
     }
 
     if (!user.is_active) {
-      logLoginEvent("inactive account", { username: loginUsername });
-      return errorResponse(res, "User account is inactive", 403);
-    }
-
-    let isPasswordCorrect;
-
-    try {
-      isPasswordCorrect = await comparePassword(password, user.password_hash);
-    } catch (error) {
-      logLoginEvent("password comparison failed", {
-        username: loginUsername,
-        error: error.message,
+      return res.status(403).json({
+        success: false,
+        message: "Account is inactive",
       });
-      throw error;
     }
 
-    if (!isPasswordCorrect) {
-      logLoginEvent("invalid password", { username: loginUsername });
-      return errorResponse(res, "Invalid username or password", 401);
+    const passwordMatch = await comparePassword(
+      password,
+      user.password_hash
+    );
+
+    if (!passwordMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
     }
 
-    const token = generateToken({
+    const tokenPayload = {
       id: user.id,
       username: user.username,
       role: user.role,
-      branch_dru: user.branch_dru,
-      token_version: user.token_version || 0,
+      branch_dru: user.branch_dru || null,
+      token_version: Number(user.token_version || 0),
+    };
+
+    const token = jwt.sign(tokenPayload, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN || "1d",
     });
 
-    logLoginEvent("success", { username: loginUsername });
+    console.log("Login success", { username });
 
-    return successResponse(res, "Login successful", {
+    return res.status(200).json({
+      success: true,
       token,
       user: {
         id: user.id,
         full_name: user.full_name,
         username: user.username,
         role: user.role,
-        branch_dru: user.branch_dru
-      }
+        branch_dru: user.branch_dru,
+        token_version: Number(user.token_version || 0),
+      },
     });
   } catch (error) {
-    next(error);
-  }
-};
-
-const logout = async (req, res, next) => {
-  try {
-    await pool.query(
-      `UPDATE users
-       SET token_version = token_version + 1,
-           updated_at = NOW()
-       WHERE id = $1`,
-      [req.user.id]
-    );
-
-    return successResponse(res, "Logout successful");
-  } catch (error) {
-    next(error);
-  }
-};
-
-const getMe = async (req, res, next) => {
-  try {
-    return successResponse(res, "User fetched successfully", {
-      id: req.user.id,
-      username: req.user.username,
-      role: req.user.role,
-      branch_dru: req.user.branch_dru
-    });
-  } catch (error) {
+    console.error("Login error:", error);
     next(error);
   }
 };
 
 module.exports = {
   login,
-  logout,
-  getMe
 };
-
-function logLoginEvent(event, details = {}) {
-  const metadata = {
-    username: details.username,
-    error: sanitizeLogMessage(details.error),
-  };
-
-  Object.keys(metadata).forEach((key) => {
-    if (!metadata[key]) {
-      delete metadata[key];
-    }
-  });
-
-  console.info(`Login ${event}`, metadata);
-}
-
-function sanitizeLogMessage(message = "") {
-  return String(message).replace(
-    /postgres(?:ql)?:\/\/\S+/gi,
-    "[redacted database url]"
-  );
-}

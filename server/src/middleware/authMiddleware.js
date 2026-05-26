@@ -1,45 +1,112 @@
-const { verifyToken } = require("../utils/jwt");
-const { errorResponse } = require("../utils/responses");
+const jwt = require("jsonwebtoken");
 const pool = require("../config/db");
+const { JWT_SECRET } = require("../config/env");
 
-const authMiddleware = async (req, res, next) => {
+const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return errorResponse(res, "Access denied. No token provided", 401);
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
     }
 
     const token = authHeader.split(" ")[1];
-    const decoded = verifyToken(token);
+
+    let decoded;
+
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (error) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token",
+      });
+    }
 
     const result = await pool.query(
-      `SELECT role, branch_dru, is_active, token_version
-       FROM users
-       WHERE id = $1
-       LIMIT 1`,
+      `
+      SELECT
+        id,
+        username,
+        role,
+        branch_dru,
+        is_active,
+        COALESCE(token_version, 0) AS token_version
+      FROM users
+      WHERE id = $1
+      LIMIT 1
+      `,
       [decoded.id]
     );
 
     const user = result.rows[0];
 
-    if (!user?.is_active) {
-      return errorResponse(res, "User account is inactive", 403);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
-    if (Number(decoded.token_version) !== Number(user.token_version || 0)) {
-      return errorResponse(res, "Invalid or expired token", 401);
+    if (!user.is_active) {
+      return res.status(403).json({
+        success: false,
+        message: "Account inactive",
+      });
+    }
+
+    const currentTokenVersion = Number(user.token_version || 0);
+    const tokenVersion = Number(decoded.token_version || 0);
+
+    if (currentTokenVersion !== tokenVersion) {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired",
+      });
     }
 
     req.user = {
-      ...decoded,
+      id: user.id,
+      username: user.username,
       role: user.role,
       branch_dru: user.branch_dru,
     };
+
     next();
   } catch (error) {
-    return errorResponse(res, "Invalid or expired token", 401);
+    console.error("Auth middleware error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Authentication failed",
+    });
   }
 };
 
-module.exports = authMiddleware;
+const authorize =
+  (...roles) =>
+  (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden",
+      });
+    }
+
+    next();
+  };
+
+module.exports = {
+  authenticate,
+  authorize,
+};
