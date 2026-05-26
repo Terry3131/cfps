@@ -1,6 +1,17 @@
 const notificationService = require("../services/notificationService");
 const { successResponse, errorResponse } = require("../utils/responses");
 
+console.log("notificationService exports:", Object.keys(notificationService));
+console.log("listVisibleNotificationsForUser:", typeof notificationService.listVisibleNotificationsForUser);
+console.log("getUnreadCountForUser:", typeof notificationService.getUnreadCountForUser);
+console.log("markNotificationAsRead:", typeof notificationService.markNotificationAsRead);
+console.log("markAllAsRead:", typeof notificationService.markAllAsRead);
+console.log("createSyncNotification:", typeof notificationService.createSyncNotification);
+
+
+const notificationService = require("../services/notificationService");
+const { successResponse, errorResponse } = require("../utils/responses");
+
 async function getNotifications(req, res, next) {
   try {
     const data = await notificationService.listVisibleNotificationsForUser(req.user);
