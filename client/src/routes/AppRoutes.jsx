@@ -19,6 +19,7 @@ import CommandDashboard from "../pages/CommandDashboard";
 import ReportsExport from "../pages/ReportsExport";
 import Attachments from "../pages/Attachments";
 import Notifications from "../pages/Notifications";
+import UserManagement from "../pages/UserManagement";
 import DesktopLogin from "../pages/DesktopLogin";
 import DesktopSettings from "../pages/DesktopSettings";
 import LocalMemoDrafts from "../pages/LocalMemoDrafts";
@@ -92,7 +93,7 @@ export default function AppRoutes() {
         <Route
           path="/aa-cas/dashboard"
           element={withRoles(
-            <CommandDashboardRoute command="CAS" />,
+            <CommandDashboardRoute command="AA-CAS" />,
             ["SUPER_ADMIN", "AA_CAS"]
           )}
         />
@@ -100,7 +101,7 @@ export default function AppRoutes() {
         <Route
           path="/aa-cas/dashboard/:section"
           element={withRoles(
-            <CommandDashboardRoute command="CAS" />,
+            <CommandDashboardRoute command="AA-CAS" />,
             ["SUPER_ADMIN", "AA_CAS"]
           )}
         />
@@ -113,7 +114,7 @@ export default function AppRoutes() {
         <Route
           path="/paso-cas/dashboard"
           element={withRoles(
-            <CommandDashboardRoute command="CAS" />,
+            <CommandDashboardRoute command="PASO-CAS" />,
             ["SUPER_ADMIN", "PASO_CAS"]
           )}
         />
@@ -121,7 +122,7 @@ export default function AppRoutes() {
         <Route
           path="/paso-cas/dashboard/:section"
           element={withRoles(
-            <CommandDashboardRoute command="CAS" />,
+            <CommandDashboardRoute command="PASO-CAS" />,
             ["SUPER_ADMIN", "PASO_CAS"]
           )}
         />
@@ -204,6 +205,11 @@ export default function AppRoutes() {
         <Route
           path="/reports-export"
           element={withRoles(<ReportsExport />, ["SUPER_ADMIN"])}
+        />
+
+        <Route
+          path="/users"
+          element={withRoles(<UserManagement />, ["SUPER_ADMIN", "CAS", "AA_CAS", "PASO_CAS"])}
         />
 
         <Route

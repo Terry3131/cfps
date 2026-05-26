@@ -45,6 +45,7 @@ const MENU_BY_ROLE = {
     { label: "Memo Registry", path: "/memos", group: "Operations" },
     { label: "Fund Release Desk", path: "/fund-release", group: "Operations" },
     { label: "Validation Desk", path: "/validation", group: "Operations" },
+    { label: "User Management", path: "/users", group: "Operations" },
     { label: "Reports / Export", path: "/reports-export", group: "Operations" },
     { label: "Notifications", path: "/notifications", group: "Operations" },
     { label: "Local Memo Drafts", path: "/desktop/local-memos", group: "Desktop" },
@@ -52,16 +53,19 @@ const MENU_BY_ROLE = {
 
   CAS: [
     ...CAS_PAGES,
+    { label: "User Management", path: "/users", group: "Operations" },
     { label: "Notifications", path: "/notifications", group: "Operations" },
   ],
 
   AA_CAS: [
     ...AA_CAS_PAGES,
+    { label: "User Management", path: "/users", group: "Operations" },
     { label: "Notifications", path: "/notifications", group: "Operations" },
   ],
 
   PASO_CAS: [
     ...PASO_CAS_PAGES,
+    { label: "User Management", path: "/users", group: "Operations" },
     { label: "Notifications", path: "/notifications", group: "Operations" },
   ],
 
@@ -128,6 +132,7 @@ const ROUTE_RULES = [
   { path: "/fund-release/:id", roles: ["SUPER_ADMIN", "CAB", "CASH_OFFICE"] },
   { path: "/validation", roles: ["SUPER_ADMIN", "VALIDATOR"] },
   { path: "/reports-export", roles: ["SUPER_ADMIN"] },
+  { path: "/users", roles: ["SUPER_ADMIN", "CAS", "AA_CAS", "PASO_CAS"] },
   { path: "/notifications", roles: ["SUPER_ADMIN", "CAS", "AA_CAS", "PASO_CAS", "CAB", "REGISTRY", "CASH_OFFICE", "MONITOR", "VALIDATOR", "VIEWER"] },
   { path: "/desktop/settings", roles: ["SUPER_ADMIN", "CAS", "REGISTRY"] },
   { path: "/desktop/local-memos", roles: ["SUPER_ADMIN", "CAS", "REGISTRY"] },
