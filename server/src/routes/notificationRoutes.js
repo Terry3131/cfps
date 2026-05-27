@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
-
-const authMiddleware = require("../middleware/authMiddleware");
+const { authenticate: authMiddleware } = require("../middleware/authMiddleware");
 const { notificationPollingRateLimit } = require("../middleware/rateLimitMiddleware");
 const {
   createSyncNotification,
+  deleteNotification,
   getNotifications,
   getUnreadCount,
   markAsRead,
@@ -16,5 +16,6 @@ router.get("/unread-count", authMiddleware, notificationPollingRateLimit, getUnr
 router.post("/sync-event", authMiddleware, createSyncNotification);
 router.patch("/read-all", authMiddleware, markAllAsRead);
 router.patch("/:id/read", authMiddleware, markAsRead);
+router.delete("/:id", authMiddleware, deleteNotification);
 
 module.exports = router;

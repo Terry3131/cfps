@@ -1,3 +1,4 @@
+const pool = require("../config/db");
 const notificationService = require("../services/notificationService");
 const { successResponse, errorResponse } = require("../utils/responses");
 
@@ -62,8 +63,36 @@ async function createSyncNotification(req, res, next) {
   }
 }
 
+async function deleteNotification(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { role, id: userId } = req.user;
+
+    const result = await pool.query(
+      `DELETE FROM notifications
+       WHERE id = $1
+         AND (
+           target_user_id = $2
+           OR target_role = $3
+           OR (target_user_id IS NULL AND target_role IS NULL)
+         )
+       RETURNING id`,
+      [id, userId, role]
+    );
+
+    if (!result.rows[0]) {
+      return errorResponse(res, "Notification not found", 404);
+    }
+
+    return successResponse(res, "Notification deleted", { id });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   createSyncNotification,
+  deleteNotification,
   getNotifications,
   getUnreadCount,
   markAsRead,
