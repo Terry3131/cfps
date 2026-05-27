@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ override: false });
 
 const NODE_ENV = process.env.NODE_ENV || "development";
 const DEFAULT_JWT_SECRETS = new Set([
