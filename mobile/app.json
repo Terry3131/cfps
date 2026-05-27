@@ -11,18 +11,31 @@
     "plugins": [
       "expo-secure-store"
     ],
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
+    },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.cfps.mobile"
     },
     "android": {
+      "package": "com.cfps.mobile",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0f172a"
       },
       "usesCleartextTraffic": false
     },
     "extra": {
       "defaultApiBaseUrl": "https://cfps-backend.onrender.com",
-      "notificationPollMs": 75000
-    }
+      "notificationPollMs": 75000,
+      "eas": {
+        "projectId": "892ad752-496f-4e20-8225-890d72d04716"
+      }
+    },
+    "owner": "cfps"
   }
 }
