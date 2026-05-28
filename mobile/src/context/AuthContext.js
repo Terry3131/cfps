@@ -3,6 +3,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { configureApiClient, getApiErrorMessage } from "../api/client";
 import { loginRequest, logoutRequest, meRequest } from "../services/authService";
 import { clearToken, getToken, setToken } from "../services/tokenService";
+import { initializePushNotifications, teardownPushNotifications } from "../services/pushNotificationService";
 import { isAllowedRole, normalizeRole } from "../utils/roles";
 
 const AuthContext = createContext(null);
@@ -100,6 +101,7 @@ export function AuthProvider({ children }) {
 
       await setToken(data.token);
       setUser({ ...data.user, role });
+      initializePushNotifications().catch(() => {});
       return { ok: true };
     } catch (err) {
       const message = getApiErrorMessage(err, "Login failed.");
@@ -117,6 +119,7 @@ export function AuthProvider({ children }) {
     } catch {
       // Clear the local secure session even if the backend token is already invalid.
     } finally {
+      await teardownPushNotifications().catch(() => {});
       await clearSession();
     }
   }, [clearSession]);

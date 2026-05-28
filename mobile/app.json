@@ -9,7 +9,19 @@
       "**/*"
     ],
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#0f172a",
+          "sounds": [
+            "./assets/notification_sound.wav"
+          ],
+          "androidMode": "default",
+          "androidCollapsedTitle": "CFPS Alert"
+        }
+      ]
     ],
     "icon": "./assets/icon.png",
     "splash": {
@@ -27,7 +39,12 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0f172a"
       },
-      "usesCleartextTraffic": false
+      "usesCleartextTraffic": false,
+      "permissions": [
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
     },
     "extra": {
       "defaultApiBaseUrl": "https://cfps-backend.onrender.com",

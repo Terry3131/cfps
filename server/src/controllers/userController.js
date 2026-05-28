@@ -250,8 +250,24 @@ async function updateUserHandler(req, res, next) {
   }
 }
 
+async function savePushTokenHandler(req, res, next) {
+  try {
+    const { push_token = null } = req.body || {};
+
+    await pool.query(
+      `UPDATE users SET push_token = $1 WHERE id = $2`,
+      [push_token, req.user.id]
+    );
+
+    return successResponse(res, "Push token saved", { push_token });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
-  listUsersHandler,
   createUserHandler,
+  listUsersHandler,
+  savePushTokenHandler,
   updateUserHandler,
 };

@@ -1,4 +1,64 @@
 const db = require("../config/db");
+const https = require("https");
+
+async function sendExpoPushNotification(pushToken, title, body, data = {}) {
+  if (!pushToken || !pushToken.startsWith("ExponentPushToken")) return;
+
+  const message = JSON.stringify({
+    to: pushToken,
+    sound: "notification_sound.wav",
+    title,
+    body,
+    data,
+    priority: "high",
+    channelId: "cfps-alerts",
+  });
+
+  return new Promise((resolve) => {
+    const req = https.request(
+      {
+        hostname: "exp.host",
+        path: "/--/api/v2/push/send",
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(message),
+        },
+      },
+      (res) => {
+        res.on("data", () => {});
+        res.on("end", resolve);
+      }
+    );
+    req.on("error", () => resolve());
+    req.write(message);
+    req.end();
+  });
+}
+
+async function sendPushToUser(userId, title, body, data = {}) {
+  try {
+    const result = await db.query(
+      `SELECT push_token FROM users WHERE id = $1 AND push_token IS NOT NULL LIMIT 1`,
+      [userId]
+    );
+    if (result.rows[0]?.push_token) {
+      await sendExpoPushNotification(result.rows[0].push_token, title, body, data);
+    }
+  } catch {}
+}
+
+async function sendPushToRole(role, title, body, data = {}) {
+  try {
+    const result = await db.query(
+      `SELECT push_token FROM users WHERE role = $1 AND push_token IS NOT NULL AND is_active = TRUE`,
+      [role]
+    );
+    for (const row of result.rows) {
+      await sendExpoPushNotification(row.push_token, title, body, data);
+    }
+  } catch {}
+}
 
 const SCHEDULED_NOTIFICATION_TYPES = {
   CAB_RELEASE_DELAY: "CAB_RELEASE_DELAY",
@@ -55,6 +115,13 @@ async function createNotification({
       metadata,
     ]
   );
+
+  // Send push notification
+  if (target_user_id) {
+    sendPushToUser(target_user_id, title, message, { memo_id, type }).catch(() => {});
+  } else if (target_role) {
+    sendPushToRole(target_role, title, message, { memo_id, type }).catch(() => {});
+  }
 
   return result.rows[0];
 }
