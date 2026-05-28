@@ -45,7 +45,9 @@ api.interceptors.response.use(
         if (typeof unauthorizedHandler === "function") {
           unauthorizedHandler();
         }
+      }
     }
+
     if (shouldRetryWithAlternateApiBase(error)) {
       const alternateBaseUrl = getAlternateApiBaseUrl(currentApiBaseUrl);
       const retryConfig = {
