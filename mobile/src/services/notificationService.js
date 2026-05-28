@@ -82,6 +82,15 @@ export async function markNotificationsReadAll() {
   }
 }
 
+export async function deleteNotification(id) {
+  try {
+    const response = await api.delete(`/notifications/${id}`);
+    return unwrapResponse(response);
+  } catch (err) {
+    throw new Error(getApiErrorMessage(err, "Unable to delete notification."));
+  }
+}
+
 export async function fetchMemoById(id) {
   const response = await api.get(`/memos/${id}`);
   return unwrapResponse(response);

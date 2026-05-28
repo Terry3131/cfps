@@ -33,12 +33,19 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error?.response?.status === 401) {
-      await clearToken();
-      if (typeof unauthorizedHandler === "function") {
-        unauthorizedHandler();
-      }
-    }
+      const msg = String(error?.response?.data?.message || "").toLowerCase();
+      const isRealSessionExpiry =
+        msg.includes("session expired") ||
+        msg.includes("invalid token") ||
+        msg.includes("user not found") ||
+        msg.includes("authentication required");
 
+      if (isRealSessionExpiry) {
+        await clearToken();
+        if (typeof unauthorizedHandler === "function") {
+          unauthorizedHandler();
+        }
+    }
     if (shouldRetryWithAlternateApiBase(error)) {
       const alternateBaseUrl = getAlternateApiBaseUrl(currentApiBaseUrl);
       const retryConfig = {

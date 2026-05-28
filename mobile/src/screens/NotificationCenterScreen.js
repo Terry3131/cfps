@@ -9,10 +9,16 @@ import EmptyState from "../components/EmptyState";
 import { useAuth } from "../context/AuthContext";
 import { useNotificationPolling } from "../hooks/useNotificationPolling";
 import {
+  deleteNotification,
   fetchNotifications,
   markNotificationRead,
   markNotificationsReadAll,
 } from "../services/notificationService";
+import {
+  removeAlertNotificationId,
+  startAlertInterval,
+  updateAlertNotificationIds,
+} from "../services/alertSoundService";
 import { getApiErrorMessage } from "../api/client";
 import { filterNotificationsForRole, groupNotificationsByRole } from "../utils/notifications";
 
@@ -26,7 +32,9 @@ export default function NotificationCenterScreen() {
   const [error, setError] = useState("");
   const [markingId, setMarkingId] = useState("");
   const [markingAll, setMarkingAll] = useState(false);
+  const [deletingId, setDeletingId] = useState("");
   const initialLoadStartedRef = useRef(false);
+  const prevUnreadIdsRef = useRef(new Set());
 
   const unreadCount = useMemo(
     () => filterNotificationsForRole(notifications, user?.role)
@@ -34,24 +42,43 @@ export default function NotificationCenterScreen() {
     [notifications, user?.role]
   );
 
+  const syncAlertSound = useCallback((data) => {
+    const unreadIds = data
+      .filter((n) => !n.is_read && !n.isRead)
+      .map((n) => String(n.id));
+
+    const prevIds = prevUnreadIdsRef.current;
+    const hasNewUnread = unreadIds.some((id) => !prevIds.has(id));
+
+    if (unreadIds.length === 0) {
+      updateAlertNotificationIds([]);
+    } else if (hasNewUnread) {
+      startAlertInterval(unreadIds);
+    } else {
+      updateAlertNotificationIds(unreadIds);
+    }
+
+    prevUnreadIdsRef.current = new Set(unreadIds);
+  }, []);
+
   const load = useCallback(async ({ quiet = false, source = "screen" } = {}) => {
     try {
       if (!quiet) setLoading(true);
       const data = await fetchNotifications({ source });
       setNotifications(data);
       setError("");
+      syncAlertSound(data);
     } catch (err) {
       setError(getApiErrorMessage(err, "Failed to load notifications."));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [syncAlertSound]);
 
   useFocusEffect(
     useCallback(() => {
       if (!isAuthenticated || initialLoadStartedRef.current) return;
-
       initialLoadStartedRef.current = true;
       load({ quiet: false, source: "focus" });
     }, [isAuthenticated, load])
@@ -66,7 +93,10 @@ export default function NotificationCenterScreen() {
   useNotificationPolling({
     enabled: isAuthenticated,
     onError: (err) => setError(getApiErrorMessage(err, "Notification polling failed.")),
-    onNotifications: setNotifications,
+    onNotifications: (data) => {
+      setNotifications(data);
+      syncAlertSound(data);
+    },
   });
 
   const refresh = () => {
@@ -79,6 +109,7 @@ export default function NotificationCenterScreen() {
       setMarkingId(item.id);
       setError("");
       await markNotificationRead(item.id);
+      removeAlertNotificationId(item.id);
       await load({ quiet: true, source: "mutation" });
     } catch (err) {
       setError(getApiErrorMessage(err, "Failed to mark notification as read."));
@@ -92,11 +123,26 @@ export default function NotificationCenterScreen() {
       setMarkingAll(true);
       setError("");
       await markNotificationsReadAll();
+      updateAlertNotificationIds([]);
       await load({ quiet: true, source: "mutation" });
     } catch (err) {
       setError(getApiErrorMessage(err, "Failed to mark all notifications as read."));
     } finally {
       setMarkingAll(false);
+    }
+  };
+
+  const deleteItem = async (item) => {
+    try {
+      setDeletingId(item.id);
+      setError("");
+      await deleteNotification(item.id);
+      removeAlertNotificationId(item.id);
+      await load({ quiet: true, source: "mutation" });
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Failed to delete notification."));
+    } finally {
+      setDeletingId("");
     }
   };
 
@@ -115,7 +161,9 @@ export default function NotificationCenterScreen() {
       <AlertCard
         item={item.item}
         marking={markingId === item.item.id}
+        deleting={deletingId === item.item.id}
         onMarkRead={() => markRead(item.item)}
+        onDelete={() => deleteItem(item.item)}
         onOpen={() => navigation.navigate("MemoAlertDetails", { notification: item.item })}
         role={user?.role}
       />

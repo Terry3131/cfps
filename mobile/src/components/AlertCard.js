@@ -1,7 +1,6 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useTheme } from "@react-navigation/native";
-
 import { formatDateTime, labelize } from "../utils/format";
 import {
   getNotificationPriority,
@@ -17,7 +16,7 @@ const priorityTone = {
   normal: "slate",
 };
 
-export default function AlertCard({ item, marking, onMarkRead, onOpen, role }) {
+export default function AlertCard({ item, marking, deleting, onMarkRead, onDelete, onOpen, role }) {
   const theme = useTheme();
   const isRead = Boolean(item?.is_read ?? item?.isRead);
   const type = normalizeNotificationType(item?.type);
@@ -45,13 +44,11 @@ export default function AlertCard({ item, marking, onMarkRead, onOpen, role }) {
         <Badge tone={isRead ? "slate" : "blue"}>{isRead ? "Read" : "Unread"}</Badge>
         <Badge tone={priorityTone[priority]}>{priority}</Badge>
       </View>
-
       <View style={styles.body}>
         <Text style={[styles.type, { color: theme.colors.primary }]}>{labelize(type)}</Text>
         <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
         <Text style={[styles.message, { color: theme.colors.text }]}>{message}</Text>
       </View>
-
       <View style={styles.meta}>
         <Text style={[styles.metaText, { color: theme.colors.text }]}>
           {formatDateTime(createdAt)}
@@ -60,17 +57,25 @@ export default function AlertCard({ item, marking, onMarkRead, onOpen, role }) {
           <Text style={[styles.metaText, { color: theme.colors.text }]}>Memo {reference}</Text>
         ) : null}
       </View>
-
-      {!isRead ? (
-        <Button tone="secondary" loading={marking} onPress={onMarkRead}>
-          Mark Read
+      <View style={styles.actions}>
+        {!isRead ? (
+          <Button tone="secondary" loading={marking} onPress={onMarkRead}>
+            Mark Read
+          </Button>
+        ) : null}
+        <Button tone="danger" loading={deleting} onPress={onDelete}>
+          Delete
         </Button>
-      ) : null}
+      </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  actions: {
+    flexDirection: "row",
+    gap: 8,
+  },
   body: {
     gap: 5,
   },
